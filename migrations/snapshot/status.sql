@@ -1,0 +1,4 @@
+CREATE TABLE status_types (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    status_name TEXT NOT NULL UNIQUE
+);
