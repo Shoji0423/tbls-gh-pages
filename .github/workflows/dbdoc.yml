@@ -1,0 +1,52 @@
+name: dbcoc
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_upload:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+      -
+        name: Migrate schema
+        run: sh migrate.sh
+      -
+        name: Run tbls for generate database document
+        uses: k1low/setup-tbls@v1
+      - 
+        run: tbls doc
+      - 
+        name: Set front page
+        run: mv ./dbdoc/README.md ./dbdoc/index.md
+      -
+        name: Build pages
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./dbdoc
+          destination: ./dist
+      -
+        name: Upload artifact
+        id: deployment
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build_and_upload
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
